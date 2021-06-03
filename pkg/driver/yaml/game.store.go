@@ -7,7 +7,6 @@ import (
 
 	"github.com/liampulles/go-mastermind/pkg/domain"
 	"github.com/liampulles/go-mastermind/pkg/usecase"
-	"gopkg.in/yaml.v2"
 )
 
 type GameYAML struct {
@@ -73,19 +72,9 @@ func readGame() (*GameYAML, error) {
 	if err != nil {
 		return nil, err
 	}
-	bytes, err := os.ReadFile(gameFile)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("no game exists for id %s", gameFile)
-		}
-		return nil, fmt.Errorf("could not read game file: %w", err)
-	}
-
 	game := GameYAML{}
-	if err := yaml.Unmarshal(bytes, &game); err != nil {
-		return nil, fmt.Errorf("could not parse game file YAML: %w", err)
-	}
-	return &game, nil
+	err = ReadFromFile(gameFile, &game)
+	return &game, err
 }
 
 func writeGame(game *GameYAML) error {
@@ -93,14 +82,7 @@ func writeGame(game *GameYAML) error {
 	if err != nil {
 		return err
 	}
-	bytes, err := yaml.Marshal(&game)
-	if err != nil {
-		return fmt.Errorf("could not marshal game to YAML: %w", err)
-	}
-	if err := os.WriteFile(gameFile, bytes, 0777); err != nil {
-		return fmt.Errorf("could not write YAML to file: %w", err)
-	}
-	return nil
+	return WriteToFile(gameFile, game)
 }
 
 func fileLocation() (string, error) {
