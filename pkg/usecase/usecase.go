@@ -6,7 +6,7 @@ import (
 	"github.com/liampulles/go-mastermind/pkg/domain"
 )
 
-type Request [4]string
+type Request string
 
 type Response struct {
 	GameWon    bool

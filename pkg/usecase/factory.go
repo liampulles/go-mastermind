@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/liampulles/go-mastermind/pkg/domain"
 )
@@ -24,9 +25,14 @@ func NewFactoryImpl(engine domain.Engine) *FactoryImpl {
 }
 
 func (f *FactoryImpl) CreateCombination(request *Request) (*domain.Combination, error) {
+	str := strings.ToUpper(string(*request))
+	if len(str) != 4 {
+		return nil, fmt.Errorf("guess must be exactly 4 letters")
+	}
+
 	var result domain.Combination
-	for i, elem := range request {
-		col, err := asColour(elem)
+	for i, r := range str {
+		col, err := asColour(r)
 		if err != nil {
 			return nil, fmt.Errorf("could not map element %d of request: %w", i, err)
 		}
@@ -42,15 +48,10 @@ func (f *FactoryImpl) CreateResponse(eval *domain.Evaluation, gameWon bool) *Res
 	}
 }
 
-func asColour(in string) (domain.Colour, error) {
-	r, err := domain.StringToRune(in)
-	if err != nil {
-		return domain.Colour(-1), fmt.Errorf("cannot make %s a rune: %w", in, err)
-	}
-
-	col, ok := domain.ShortCodeToColour[r]
+func asColour(in rune) (domain.Colour, error) {
+	col, ok := domain.ShortCodeToColour[in]
 	if !ok {
-		return domain.Colour(-1), fmt.Errorf("no colour corresponds to %s", in)
+		return domain.Colour(-1), fmt.Errorf("no colour corresponds to %s", string(in))
 	}
 	return col, nil
 }

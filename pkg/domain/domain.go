@@ -1,6 +1,9 @@
 package domain
 
-import "math/rand"
+import (
+	"math/rand"
+	"time"
+)
 
 type Colour int
 
@@ -68,27 +71,41 @@ func NewEngineImpl() *EngineImpl {
 func (e *EngineImpl) Evaluate(secret *Combination, guess *Combination) *Evaluation {
 	var result Evaluation
 
-	guessColours := make(map[Colour]bool)
-	for _, guessColour := range guess {
-		guessColours[guessColour] = true
+	secretColours := make(map[Colour]int)
+	for _, secretColour := range secret {
+		secretColours[secretColour] += 1
 	}
 
+	// First sweep for perfect matches
+	for i := 0; i < len(secret); i++ {
+		guessColour := guess[i]
+		secretColour := secret[i]
+		if guessColour == secretColour {
+			secretColours[guessColour] -= 1
+		}
+	}
+	// Second sweep to assign result
 	for i := 0; i < len(secret); i++ {
 		guessColour := guess[i]
 		secretColour := secret[i]
 		if guessColour == secretColour {
 			result[i] = Perfect
-		} else if _, ok := guessColours[guessColour]; ok {
+		} else if remaining, ok := secretColours[guessColour]; ok && remaining > 0 {
 			result[i] = GoodColourBadPosition
 		} else {
 			result[i] = Nothing
 		}
 	}
+
+	// Mix the evaluation around ;)
+	rand.Shuffle(len(result), func(i, j int) { result[i], result[j] = result[j], result[i] })
+
 	return &result
 }
 
 func (e *EngineImpl) CreateSecret() *Combination {
 	var result Combination
+	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < len(result); i++ {
 		result[i] = Colour(rand.Intn(len(ShortCodeToColour)))
 	}

@@ -102,7 +102,7 @@ func writeGame(id usecase.GameIdentifier, game *GameYAML) error {
 	if err != nil {
 		return fmt.Errorf("could not marshal game to YAML: %w", err)
 	}
-	if err := os.WriteFile(string(id), bytes, os.ModeAppend); err != nil {
+	if err := os.WriteFile(string(id), bytes, 0777); err != nil {
 		return fmt.Errorf("could not write YAML to file: %w", err)
 	}
 	return nil

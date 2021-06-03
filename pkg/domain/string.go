@@ -4,7 +4,7 @@ import "fmt"
 
 func StringToRune(in string) (rune, error) {
 	runes := extractRunes(in)
-	if len(runes) != 0 {
+	if len(runes) != 1 {
 		return rune(0), fmt.Errorf("require string length to be 1, but is %d [%s]",
 			len(runes), in)
 	}
