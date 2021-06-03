@@ -40,19 +40,14 @@ func NewHumanEngineImpl(
 
 func (he *HumanEngineImpl) NewGame() error {
 	secret := he.engine.CreateSecret()
-	if _, err := he.store.New(secret); err != nil {
+	if err := he.store.New(secret); err != nil {
 		return fmt.Errorf("store error: %w", err)
 	}
 	return nil
 }
 
 func (he *HumanEngineImpl) Evaluate(request *Request) (*Response, error) {
-	id, err := he.store.GetCurrentGameIdentifier()
-	if err != nil {
-		return nil, fmt.Errorf("could not get current game: %w", err)
-	}
-
-	won, err := he.store.IsWon(id)
+	won, err := he.store.IsWon()
 	if err != nil {
 		return nil, fmt.Errorf("could not get game won state: %w", err)
 	}
@@ -60,7 +55,7 @@ func (he *HumanEngineImpl) Evaluate(request *Request) (*Response, error) {
 		return nil, fmt.Errorf("game is already won")
 	}
 
-	secret, err := he.store.GetSecret(id)
+	secret, err := he.store.GetSecret()
 	if err != nil {
 		return nil, fmt.Errorf("could not get game secret: %w", err)
 	}
@@ -72,7 +67,7 @@ func (he *HumanEngineImpl) Evaluate(request *Request) (*Response, error) {
 
 	eval := he.engine.Evaluate(secret, guess)
 	if eval.IsPerfect() {
-		if err := he.store.EndGame(id); err != nil {
+		if err := he.store.EndGame(); err != nil {
 			return nil, fmt.Errorf("could not end won game: %w", err)
 		}
 		return he.factory.CreateResponse(eval, true), nil
